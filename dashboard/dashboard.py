@@ -32,15 +32,6 @@ def parse_skills(value):
     return []
 
 
-def parse_city(value):
-    """Ambil nama kota dari kolom lokasi."""
-    if isinstance(value, str):
-        text = value.strip()
-        if not text:
-            return None
-        return text.split(',')[0].strip()
-    return None
-
 # ==================== FUNGSI ANALISIS ====================
 
 def get_top_skills(df, n=20):
@@ -85,19 +76,6 @@ def get_avg_salary_by_industry(df):
         return avg_salary
     return pd.Series()
 
-def get_city_job_count(df):
-    """Mendapatkan jumlah lowongan per kota"""
-    if 'city' in df.columns:
-        city_counts = df['city'].value_counts().head(15)
-        return city_counts.sort_values(ascending=True)
-    return pd.Series()
-
-def get_city_top_salary(df):
-    """Mendapatkan kota dengan rata-rata gaji tertinggi"""
-    if 'city' in df.columns and 'salary' in df.columns:
-        city_avg_salary = df.groupby('city')['salary'].mean().sort_values(ascending=True).tail(10)
-        return city_avg_salary
-    return pd.Series()
 
 # ==================== MEMUAT DATA ====================
 def load_data():
@@ -119,16 +97,10 @@ if 'salary' in main_data.columns:
 if 'skills_list' in main_data.columns:
     main_data['skills_list'] = main_data['skills_list'].apply(parse_skills)
 
-if 'city' not in main_data.columns and 'location' in main_data.columns:
-    main_data['city'] = main_data['location'].apply(parse_city)
-
-if 'city' in main_data.columns:
-    main_data['city'] = main_data['city'].apply(parse_city)
-
 # ==================== TAMPILAN DASHBOARD ====================
 
 st.header('Dashboard Analisis Pasar Kerja ')
-st.markdown('Dashboard ini menyajikan analisis pasar kerja berdasarkan skill yang dicari, distribusi gaji, dan lokasi pekerjaan.')
+st.markdown('Dashboard ini menyajikan analisis pasar kerja berdasarkan skill yang dicari dan distribusi gaji.')
 
 # ==================== VISUALISASI 1: TOP SKILLS ====================
 st.subheader(' Top Skills yang Paling Sering Dicari')
