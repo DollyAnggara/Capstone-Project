@@ -234,74 +234,6 @@ if not avg_salary.empty:
 else:
     st.warning("Data gaji tidak tersedia")
 
-# ==================== VISUALISASI 4: KOTA DENGAN LOWONGAN TERBANYAK ====================
-st.subheader('Distribusi Lowongan per Kota')
-
-city_jobs = get_city_job_count(main_data)
-
-if not city_jobs.empty:
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        fig, ax = plt.subplots(figsize=(10, 8))
-        cities = city_jobs.index
-        counts = city_jobs.values
-        
-        colors = plt.cm.plasma([i/len(cities) for i in range(len(cities))])
-        bars = ax.barh(cities, counts, color=colors)
-        
-        ax.set_xlabel('Jumlah Lowongan', fontsize=12)
-        ax.set_ylabel('Kota', fontsize=12)
-        ax.set_title('Top 15 Kota dengan Jumlah Lowongan Terbanyak', fontsize=14, fontweight='bold')
-        
-        for bar, val in zip(bars, counts):
-            ax.text(bar.get_width() + 20, bar.get_y() + bar.get_height()/2,
-                    str(val), va='center', fontsize=9)
-        
-        plt.tight_layout()
-        st.pyplot(fig)
-    
-    with col2:
-        st.metric("Total Kota", len(city_jobs))
-        st.metric("Kota dengan Lowongan Terbanyak", city_jobs.index[-1],
-                  f"{city_jobs.values[-1]:,} lowongan")
-else:
-    st.warning("Data kota tidak tersedia")
-
-# ==================== VISUALISASI 5: KOTA DENGAN GAJI TERTINGGI ====================
-st.subheader('Top 10 Kota dengan Rata-rata Gaji Tertinggi')
-
-top_city_salary = get_city_top_salary(main_data)
-
-if not top_city_salary.empty:
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        fig, ax = plt.subplots(figsize=(10, 8))
-        cities = top_city_salary.index
-        salaries = top_city_salary.values
-        
-        colors = plt.cm.inferno([i/len(cities) for i in range(len(cities))])
-        bars = ax.barh(cities, salaries, color=colors)
-        
-        ax.set_xlabel('Rata-rata Gaji (USD)', fontsize=12)
-        ax.set_ylabel('Kota', fontsize=12)
-        ax.set_title('Top 10 Kota dengan Rata-rata Gaji Tertinggi', fontsize=14, fontweight='bold')
-        
-        for bar, val in zip(bars, salaries):
-            ax.text(bar.get_width() + 500, bar.get_y() + bar.get_height()/2,
-                    f'${val:,.0f}', va='center', fontsize=10)
-        
-        plt.tight_layout()
-        st.pyplot(fig)
-    
-    with col2:
-        st.metric("Kota dengan Gaji Tertinggi", top_city_salary.index[-1],
-                  f"${top_city_salary.values[-1]:,.0f}")
-        st.metric("Selisih Gaji Tertinggi - Terendah", 
-                  f"${top_city_salary.values[-1] - top_city_salary.values[0]:,.0f}")
-else:
-    st.warning("Data gaji per kota tidak tersedia")
 
 # ==================== INSIGHT KESIMPULAN ====================
 st.subheader('Insight & Kesimpulan')
@@ -310,8 +242,6 @@ insights = [
     "**Skill Teknis Mendominasi**: Python dan SQL adalah skill yang paling banyak dicari.",
     "**Industri Teknologi dan Software** memiliki kebutuhan skill programming yang tinggi.",
     "**Gaji Antar Industri** relatif merata dengan selisih tidak terlalu signifikan.",
-    "**Kota Besar** seperti Toronto, London, dan New York memiliki jumlah lowongan terbanyak.",
-    "**Kota dengan Gaji Tertinggi** bervariasi, tidak selalu kota dengan lowongan terbanyak."
 ]
 
 for insight in insights:
