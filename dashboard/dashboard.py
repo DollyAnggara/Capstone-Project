@@ -5,6 +5,7 @@ import streamlit as st
 from babel.numbers import format_currency
 from pathlib import Path
 import ast
+import numpy as np
 
 sns.set_theme(style='whitegrid', context='talk')
 
@@ -258,6 +259,31 @@ def get_avg_salary_by_industry(df):
     return pd.Series()
 
 
+def get_top_skills_by_salary(df, n=10, min_occurrences=50):
+    """Mendapatkan top N skill dengan gaji rata-rata tertinggi"""
+    if 'skills_list' not in df.columns or 'salary' not in df.columns:
+        return pd.DataFrame()
+    
+    skill_salary_data = []
+    for idx, row in df.iterrows():
+        skills_list = row['skills_list']
+        salary = row['salary']
+        if isinstance(skills_list, list) and len(skills_list) > 0:
+            for skill in skills_list:
+                skill_salary_data.append({'skill': skill, 'salary': salary})
+    
+    if not skill_salary_data:
+        return pd.DataFrame()
+    
+    skill_salary_df = pd.DataFrame(skill_salary_data)
+    top_skills = skill_salary_df.groupby('skill')['salary'].agg(['mean', 'count']).sort_values(by='mean', ascending=False).head(n)
+    
+    # Filter hanya skill yang muncul minimal min_occurrences kali (untuk akurasi)
+    top_skills = top_skills[top_skills['count'] >= min_occurrences]
+    
+    return top_skills.sort_values(by='mean', ascending=True)
+
+
 def get_dashboard_metrics(df):
     return {
         'total_jobs': len(df),
@@ -426,6 +452,7 @@ with tab_salary:
             bars = ax.barh(industries, salaries, color=sns.color_palette('crest', n_colors=len(industries)), edgecolor='white', linewidth=0.8)
             chart_frame(ax, 'Rata-rata Gaji per Kategori Industri', 'Rata-rata Gaji (USD)', 'Industri')
             annotate_bars(ax, bars, salaries, fmt='${:,.0f}', offset_ratio=0.02)
+            ax.set_xlim(0, 120000)
             plt.tight_layout()
             st.pyplot(fig, clear_figure=True)
 
@@ -438,6 +465,52 @@ with tab_salary:
             st.metric('Rata-rata gaji keseluruhan', format_usd(avg_salary.mean()))
     else:
         st.warning('Data gaji tidak tersedia')
+
+    # Divider
+    st.divider()
+
+    # Top 10 Skills by Salary
+    st.markdown('### Top 10 Skill dengan Gaji Tertinggi')
+    st.markdown(
+        '<div class="section-caption">Skill yang ditampilkan adalah yang memiliki rata-rata gaji tertinggi dengan minimum 50 kemunculan untuk akurasi.</div>',
+        unsafe_allow_html=True,
+    )
+
+    top_skills_salary = get_top_skills_by_salary(main_data, n=10, min_occurrences=50)
+
+    if not top_skills_salary.empty:
+        salary_skills_left, salary_skills_right = st.columns([1.35, 0.75])
+
+        with salary_skills_left:
+            fig, ax = plt.subplots(figsize=(11.5, 7.5), facecolor='white')
+            skills_names = top_skills_salary.index.tolist()
+            skills_salaries = top_skills_salary['mean'].values.tolist()
+            colors = plt.cm.RdYlGn(np.linspace(0.3, 0.8, len(skills_names)))
+            bars = ax.barh(range(len(skills_names)), skills_salaries, color=colors, edgecolor='white', linewidth=0.8, height=0.7)
+            
+            ax.set_yticks(range(len(skills_names)))
+            ax.set_yticklabels(skills_names, fontsize=10)
+            chart_frame(ax, 'Top 10 Skill dengan Rata-rata Gaji Tertinggi', 'Rata-rata Gaji (USD)', 'Skill')
+            
+            # Annotate with salary and count
+            for i, (sal, count) in enumerate(zip(top_skills_salary['mean'].values, top_skills_salary['count'].values)):
+                ax.text(sal + 500, i, f'${sal:,.0f} (n={int(count)})', va='center', fontsize=10, fontweight='bold', color='#1f2937')
+            
+            ax.set_xlim(0, 120000)
+            plt.tight_layout()
+            st.pyplot(fig, clear_figure=True)
+
+        with salary_skills_right:
+            top_skill_name = top_skills_salary['mean'].idxmax()
+            top_skill_salary = top_skills_salary['mean'].max()
+            top_skill_count = top_skills_salary.loc[top_skill_name, 'count']
+            
+            st.markdown('**Skill Bernilai Premium**')
+            st.metric('Skill dengan gaji tertinggi', top_skill_name, format_usd(top_skill_salary))
+            st.metric('Jumlah kemunculan', f"{int(top_skill_count):,}")
+            st.metric('Rata-rata gaji semua skill', format_usd(top_skills_salary['mean'].mean()))
+    else:
+        st.info('Data skill dengan gaji tidak tersedia')
 
 st.subheader('Insight & Kesimpulan')
 insights = [
