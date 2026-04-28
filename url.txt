@@ -1,1 +1,1 @@
-https://cvscancapstone.streamlit.app/
+https://karirku.streamlit.app/
