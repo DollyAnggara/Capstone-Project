@@ -6,7 +6,143 @@ from babel.numbers import format_currency
 from pathlib import Path
 import ast
 
-sns.set(style='dark')
+sns.set_theme(style='whitegrid', context='talk')
+
+st.set_page_config(
+    page_title='Dashboard Analisis Pasar Kerja',
+    page_icon='📊',
+    layout='wide',
+    initial_sidebar_state='collapsed',
+)
+
+
+def inject_styles():
+    st.markdown(
+        '''
+        <style>
+            .stApp {
+                background:
+                    radial-gradient(circle at top left, rgba(245, 158, 11, 0.12), transparent 30%),
+                    radial-gradient(circle at top right, rgba(34, 197, 94, 0.10), transparent 24%),
+                    linear-gradient(180deg, #fffdf8 0%, #f8f5ef 100%);
+                color: #1f2937;
+            }
+
+            .main .block-container {
+                padding-top: 1.2rem;
+                padding-bottom: 2rem;
+            }
+
+            .hero-card {
+                padding: 1.8rem 2rem;
+                border-radius: 28px;
+                background: linear-gradient(135deg, #1f2937 0%, #3f2d20 55%, #8a4b12 100%);
+                color: #fff7ed;
+                box-shadow: 0 24px 60px rgba(31, 41, 55, 0.20);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+            }
+
+            .hero-card h1 {
+                margin: 0;
+                font-size: 2.15rem;
+                line-height: 1.1;
+                color: #fffaf3;
+            }
+
+            .hero-card p {
+                margin-top: 0.75rem;
+                margin-bottom: 0;
+                color: rgba(255, 250, 243, 0.88);
+                font-size: 1rem;
+            }
+
+            .section-card {
+                background: rgba(255, 255, 255, 0.90);
+                border: 1px solid rgba(120, 113, 108, 0.15);
+                border-radius: 24px;
+                padding: 1.2rem 1.2rem 0.9rem 1.2rem;
+                box-shadow: 0 12px 28px rgba(31, 41, 55, 0.06);
+                margin-bottom: 1rem;
+            }
+
+            .section-caption {
+                color: #6b7280;
+                font-size: 0.94rem;
+                margin-top: -0.25rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .insight-box {
+                background: linear-gradient(135deg, rgba(245,158,11,0.06), rgba(250,204,21,0.02));
+                border: 1px solid rgba(245,158,11,0.12);
+                border-radius: 12px;
+                padding: 0.9rem 0.9rem;
+                color: #1f2937;
+                box-shadow: 0 8px 18px rgba(31,41,55,0.04);
+            }
+
+            .highlight-card {
+                background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,252,242,0.95));
+                border-radius: 12px;
+                padding: 0.9rem 1rem;
+                border: 1px solid rgba(148,163,184,0.06);
+            }
+
+            .highlight-card h4 { margin: 0 0 6px 0; color: #92400e; }
+            .highlight-row { display:flex; flex-direction:column; gap:6px; }
+            .hl-item { display:flex; justify-content:space-between; align-items:center; padding:6px 8px; border-radius:8px; background: rgba(15,23,42,0.02); }
+            .hl-label { color:#6b7280; font-size:0.92rem; }
+            .hl-value { color:#1f2937; font-weight:700; }
+
+            .conclusion-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; margin-top:8px; }
+            .conclusion-card { background: rgba(255,255,255,0.95); padding:12px 14px; border-radius:12px; border:1px solid rgba(148,163,184,0.06); box-shadow:0 8px 18px rgba(31,41,55,0.04); }
+            .conclusion-card h4 { margin:0 0 6px 0; color:#92400e; }
+            .conclusion-card p { margin:0; color:#374151; font-size:0.95rem; }
+            }
+
+            h1, h2, h3 {
+                color: #1f2937;
+                letter-spacing: -0.02em;
+            }
+
+            .stMarkdown, .stText, .stMetric, .stDataFrame, .stInfo, .stWarning {
+                color: #1f2937;
+            }
+
+            div[data-testid='stMetric'] {
+                background: rgba(255, 255, 255, 0.90);
+                border: 1px solid rgba(120, 113, 108, 0.15);
+                border-radius: 18px;
+                padding: 0.9rem 0.95rem;
+                box-shadow: 0 10px 22px rgba(31, 41, 55, 0.05);
+            }
+
+            div[data-testid='stMetric'] * {
+                color: #1f2937 !important;
+            }
+
+            [data-testid='stTabs'] button {
+                border-radius: 999px;
+                padding: 0.35rem 0.95rem;
+                margin-right: 0.35rem;
+                color: #1f2937;
+            }
+
+            [data-testid='stTabs'] button[aria-selected='true'] {
+                background: rgba(245, 158, 11, 0.18);
+                color: #7c2d12;
+            }
+
+            .stSelectbox label, .stDataFrame label {
+                color: #1f2937;
+            }
+        </style>
+        ''',
+        unsafe_allow_html=True,
+    )
+
+
+inject_styles()
 
 
 def parse_skills(value):
@@ -32,6 +168,44 @@ def parse_skills(value):
     return []
 
 
+def format_usd(value):
+    if pd.isna(value):
+        return '-'
+    return format_currency(float(value), 'USD', locale='en_US')
+
+
+def chart_frame(ax, title, xlabel='', ylabel=''):
+    ax.set_title(title, loc='left', pad=16, fontsize=16, fontweight='bold', color='#1f2937')
+    ax.set_xlabel(xlabel, fontsize=11, color='#374151')
+    ax.set_ylabel(ylabel, fontsize=11, color='#374151')
+    ax.grid(axis='x', linestyle='--', alpha=0.22, color='#a8a29e')
+    ax.set_axisbelow(True)
+    ax.set_facecolor('#ffffff')
+
+    for spine in ['top', 'right']:
+        ax.spines[spine].set_visible(False)
+    ax.spines['left'].set_alpha(0.22)
+    ax.spines['bottom'].set_alpha(0.22)
+
+
+def annotate_bars(ax, bars, values, fmt='{:,}', offset_ratio=0.018):
+    if not values:
+        return
+
+    max_value = max(values)
+    offset = max_value * offset_ratio if max_value else 0.5
+    for bar, value in zip(bars, values):
+        ax.text(
+            bar.get_width() + offset,
+            bar.get_y() + bar.get_height() / 2,
+            fmt.format(value),
+            va='center',
+            ha='left',
+            fontsize=9,
+            color='#1f2937',
+        )
+
+
 # ==================== FUNGSI ANALISIS ====================
 
 def get_top_skills(df, n=20):
@@ -51,6 +225,13 @@ def get_top_skills(df, n=20):
     
     # Balik urutan untuk tampilan
     return {k: top_skills[k] for k in list(top_skills.keys())[::-1]}
+
+
+def get_top_industries(df, n=8):
+    if 'category' not in df.columns:
+        return pd.Series(dtype=int)
+
+    return df['category'].value_counts().head(n).sort_values(ascending=True)
 
 def get_skills_by_industry(df, n=10):
     """Mendapatkan top N skill beserta jumlahnya untuk tiap industri"""
@@ -77,6 +258,16 @@ def get_avg_salary_by_industry(df):
     return pd.Series()
 
 
+def get_dashboard_metrics(df):
+    return {
+        'total_jobs': len(df),
+        'total_companies': df['company'].nunique() if 'company' in df.columns else 0,
+        'total_categories': df['category'].nunique() if 'category' in df.columns else 0,
+        'skills_mentions': int(sum(len(skills) for skills in df['skills_list'])) if 'skills_list' in df.columns else 0,
+        'avg_salary': df['salary'].mean() if 'salary' in df.columns else pd.NA,
+    }
+
+
 # ==================== MEMUAT DATA ====================
 def load_data():
     """Memuat dataset all_jobs_data.csv"""
@@ -99,123 +290,167 @@ if 'skills_list' in main_data.columns:
 
 # ==================== TAMPILAN DASHBOARD ====================
 
-st.header('Dashboard Analisis Pasar Kerja ')
-st.markdown('Dashboard ini menyajikan analisis pasar kerja berdasarkan skill yang dicari dan distribusi gaji.')
+dashboard_metrics = get_dashboard_metrics(main_data)
 
-# ==================== VISUALISASI 1: TOP SKILLS ====================
-st.subheader(' Top Skills yang Paling Sering Dicari')
+st.markdown(
+    '''
+    <div class="hero-card">
+        <h1>Dashboard Analisis Pasar Kerja</h1>
+    </div>
+    ''',
+    unsafe_allow_html=True,
+)
 
-top_skills = get_top_skills(main_data)
+st.write('')
 
-if top_skills:
-    fig, ax = plt.subplots(figsize=(12, 8))
-    skills_names = list(top_skills.keys())
-    skills_values = list(top_skills.values())
-    
-    colors = plt.cm.viridis([i/len(skills_names) for i in range(len(skills_names))])
-    bars = ax.barh(skills_names, skills_values, color=colors)
-    
-    ax.set_xlabel('Jumlah Lowongan', fontsize=12)
-    ax.set_ylabel('Skill', fontsize=12)
-    ax.set_title(f'Top {len(top_skills)} Skill yang Paling Sering Dicari', fontsize=14, fontweight='bold')
-    
-    # Tambahkan label nilai
-    for bar, val in zip(bars, skills_values):
-        ax.text(bar.get_width() + 10, bar.get_y() + bar.get_height()/2,
-                str(val), va='center', fontsize=9)
-    
-    plt.tight_layout()
-    st.pyplot(fig)
-else:
-    st.warning("Data skills tidak tersedia")
-
-# ==================== VISUALISASI 2: SKILL PER INDUSTRI ====================
-st.subheader('Top Skill per Industri')
-
-skills_by_industry = get_skills_by_industry(main_data)
-
-if skills_by_industry:
-    industries_list = [i for i in skills_by_industry.keys() if skills_by_industry[i]]
-    industries_to_show = industries_list[:6]
-
-    if industries_to_show:
-        n_cols = 3
-        n_rows = (len(industries_to_show) + n_cols - 1) // n_cols
-        fig, axes = plt.subplots(n_rows, n_cols, figsize=(18, 4 * n_rows))
-        axes = axes.flatten() if hasattr(axes, 'flatten') else [axes]
-
-        color_map = plt.cm.Set2
-        for idx, industry in enumerate(industries_to_show):
-            ax = axes[idx]
-            top_items = skills_by_industry[industry]
-            skills = [item[0] for item in top_items][::-1]
-            counts = [item[1] for item in top_items][::-1]
-
-            bars = ax.barh(skills, counts, color=color_map(idx % 8))
-            ax.set_title(industry, fontsize=12, fontweight='bold')
-            ax.set_xlabel('Jumlah', fontsize=10)
-
-            for bar, val in zip(bars, counts):
-                ax.text(bar.get_width() + max(counts) * 0.02, bar.get_y() + bar.get_height() / 2,
-                        str(val), va='center', fontsize=8)
-
-        for idx in range(len(industries_to_show), len(axes)):
-            axes[idx].axis('off')
-
-        fig.suptitle('Top Skill per Industri', fontsize=16, fontweight='bold')
-        plt.tight_layout()
-        st.pyplot(fig)
-    else:
-        st.info("Data skill per industri tidak tersedia")
-else:
-    st.info("Data skill per industri tidak tersedia")
-
-# ==================== VISUALISASI 3: GAJI PER INDUSTRI ====================
-st.subheader('Distribusi Gaji Berdasarkan Industri')
-
-avg_salary = get_avg_salary_by_industry(main_data)
-
-if not avg_salary.empty:
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        fig, ax = plt.subplots(figsize=(10, 6))
-        industries = avg_salary.index
-        salaries = avg_salary.values
-        
-        colors = plt.cm.viridis([i/len(industries) for i in range(len(industries))])
-        bars = ax.barh(industries, salaries, color=colors)
-        
-        ax.set_title('Rata-rata Gaji per Kategori Industri', fontsize=14, fontweight='bold')
-        ax.set_xlabel('Rata-rata Gaji (USD)', fontsize=12)
-        ax.set_ylabel('Industri', fontsize=12)
-        
-        for bar, val in zip(bars, salaries):
-            ax.text(bar.get_width() + 500, bar.get_y() + bar.get_height()/2,
-                    f'${val:,.0f}', va='center', fontsize=10)
-        
-        plt.tight_layout()
-        st.pyplot(fig)
-    
-    with col2:
-        st.metric("Industri dengan Gaji Tertinggi", avg_salary.index[-1], 
-                  f"${avg_salary.values[-1]:,.0f}")
-        st.metric("Industri dengan Gaji Terendah", avg_salary.index[0],
-                  f"${avg_salary.values[0]:,.0f}")
-        st.metric("Rata-rata Gaji Keseluruhan", f"${avg_salary.mean():,.0f}")
-else:
-    st.warning("Data gaji tidak tersedia")
-
-
-# ==================== INSIGHT KESIMPULAN ====================
-st.subheader('Insight & Kesimpulan')
-
-insights = [
-    "**Skill Teknis Mendominasi**: Python dan SQL adalah skill yang paling banyak dicari.",
-    "**Industri Teknologi dan Software** memiliki kebutuhan skill programming yang tinggi.",
-    "**Gaji Antar Industri** relatif merata dengan selisih tidak terlalu signifikan.",
+metric_cols = st.columns(5)
+metric_values = [
+    ('Total Lowongan', f"{dashboard_metrics['total_jobs']:,}"),
+    ('Perusahaan', f"{dashboard_metrics['total_companies']:,}"),
+    ('Industri', f"{dashboard_metrics['total_categories']:,}"),
+    ('Mentions Skill', f"{dashboard_metrics['skills_mentions']:,}"),
+    ('Rata-rata Gaji', format_usd(dashboard_metrics['avg_salary'])),
 ]
 
-for insight in insights:
-    st.markdown(f"- {insight}")
+for col, (label, value) in zip(metric_cols, metric_values):
+    with col:
+        st.metric(label, value)
+
+st.write('')
+
+tab_overview, tab_skills, tab_salary = st.tabs(['Ringkasan', 'Skill', 'Gaji'])
+
+with tab_overview:
+    st.subheader('Ringkasan Pasar Kerja')
+    st.markdown(
+        '<div class="section-caption">Dua grafik berikut menampilkan skill yang paling dicari dan industri dengan jumlah lowongan terbesar.</div>',
+        unsafe_allow_html=True,
+    )
+
+    overview_left, overview_right = st.columns([1, 1])
+
+    top_skills = get_top_skills(main_data, n=15)
+    with overview_left:
+        if top_skills:
+            fig, ax = plt.subplots(figsize=(10.8, 7.2), facecolor='white')
+            skills_names = list(top_skills.keys())
+            skills_values = list(top_skills.values())
+            palette = sns.color_palette('YlOrBr', n_colors=len(skills_names))
+            bars = ax.barh(skills_names, skills_values, color=palette, edgecolor='white', linewidth=0.8)
+            chart_frame(ax, f'Top {len(top_skills)} Skill yang Paling Dicari', 'Jumlah Lowongan', 'Skill')
+            annotate_bars(ax, bars, skills_values)
+            plt.tight_layout()
+            st.pyplot(fig, clear_figure=True)
+        else:
+            st.warning('Data skills tidak tersedia')
+
+    with overview_right:
+        top_industries = get_top_industries(main_data, n=8)
+        if not top_industries.empty:
+            fig, ax = plt.subplots(figsize=(10.8, 7.2), facecolor='white')
+            industries = list(top_industries.index)
+            counts = list(top_industries.values)
+            bars = ax.barh(industries, counts, color=sns.color_palette('rocket', n_colors=len(industries)), edgecolor='white', linewidth=0.8)
+            chart_frame(ax, 'Industri dengan Volume Lowongan Terbesar', 'Jumlah Lowongan', 'Industri')
+            annotate_bars(ax, bars, counts)
+            plt.tight_layout()
+            st.pyplot(fig, clear_figure=True)
+        else:
+            st.info('Data industri tidak tersedia')
+
+with tab_skills:
+    st.subheader('Skill per Industri')
+    st.markdown(
+        '<div class="section-caption">Pilih industri untuk melihat skill paling dominan. Warna grafik dibuat hangat agar lebih mudah dibaca.</div>',
+        unsafe_allow_html=True,
+    )
+
+    skills_by_industry = get_skills_by_industry(main_data)
+    industries_list = [industry for industry in skills_by_industry.keys() if skills_by_industry[industry]]
+
+    if industries_list:
+        selected_industry = st.selectbox('Pilih industri', industries_list)
+        selected_skill_data = skills_by_industry.get(selected_industry, [])
+
+        if selected_skill_data:
+            top_skill_name, top_skill_count = selected_skill_data[0]
+            skill_names = [item[0] for item in selected_skill_data][::-1]
+            skill_counts = [item[1] for item in selected_skill_data][::-1]
+
+            skill_cols = st.columns([1.3, 0.7])
+            with skill_cols[0]:
+                fig, ax = plt.subplots(figsize=(11, 7), facecolor='white')
+                bars = ax.barh(skill_names, skill_counts, color=sns.color_palette('flare', n_colors=len(skill_names)), edgecolor='white', linewidth=0.8)
+                chart_frame(ax, f'Skill Teratas di Industri {selected_industry}', 'Jumlah Lowongan', 'Skill')
+                annotate_bars(ax, bars, skill_counts)
+                plt.tight_layout()
+                st.pyplot(fig, clear_figure=True)
+
+            with skill_cols[1]:
+                                # Tampilkan kartu highlight yang lebih menarik
+                                st.markdown(
+                                        f"""
+                                        <div class="highlight-card">
+                                            <h4>Highlight Industri</h4>
+                                            <div class="highlight-row">
+                                                <div class="hl-item"><span class="hl-label">Industri</span><span class="hl-value">{selected_industry}</span></div>
+                                                <div class="hl-item"><span class="hl-label">Top Skill</span><span class="hl-value">{top_skill_name}</span></div>
+                                                <div class="hl-item"><span class="hl-label">Jumlah Muncul</span><span class="hl-value">{top_skill_count:,}</span></div>
+                                                <div class="hl-item"><span class="hl-label">Total Skill Unik</span><span class="hl-value">{len(selected_skill_data):,}</span></div>
+                                            </div>
+                                        </div>
+                                        """,
+                                        unsafe_allow_html=True,
+                                )
+        else:
+            st.info('Data skill untuk industri terpilih tidak tersedia')
+    else:
+        st.info('Data skill per industri tidak tersedia')
+
+with tab_salary:
+    st.subheader('Distribusi Gaji per Industri')
+    st.markdown(
+        '<div class="section-caption">Bagian ini menampilkan perbandingan gaji rata-rata antar industri dengan label nilai yang jelas.</div>',
+        unsafe_allow_html=True,
+    )
+
+    avg_salary = get_avg_salary_by_industry(main_data)
+
+    if not avg_salary.empty:
+        salary_left, salary_right = st.columns([1.35, 0.75])
+
+        with salary_left:
+            fig, ax = plt.subplots(figsize=(11.5, 7.5), facecolor='white')
+            industries = list(avg_salary.index)
+            salaries = list(avg_salary.values)
+            bars = ax.barh(industries, salaries, color=sns.color_palette('crest', n_colors=len(industries)), edgecolor='white', linewidth=0.8)
+            chart_frame(ax, 'Rata-rata Gaji per Kategori Industri', 'Rata-rata Gaji (USD)', 'Industri')
+            annotate_bars(ax, bars, salaries, fmt='${:,.0f}', offset_ratio=0.02)
+            plt.tight_layout()
+            st.pyplot(fig, clear_figure=True)
+
+        with salary_right:
+            top_industry = avg_salary.idxmax()
+            bottom_industry = avg_salary.idxmin()
+            st.markdown('**Ringkasan Gaji**')
+            st.metric('Industri dengan gaji tertinggi', top_industry, format_usd(avg_salary.max()))
+            st.metric('Industri dengan gaji terendah', bottom_industry, format_usd(avg_salary.min()))
+            st.metric('Rata-rata gaji keseluruhan', format_usd(avg_salary.mean()))
+    else:
+        st.warning('Data gaji tidak tersedia')
+
+st.subheader('Insight & Kesimpulan')
+insights = [
+    ('Skill Teknis Mendominasi', 'Python, SQL, dan tool cloud muncul paling sering dan menjadi prioritas rekrutmen di banyak kategori.'),
+    ('Industri dengan Variasi Skill', 'Industri besar (Retail, Finance, Healthcare) menunjukkan variasi skill yang tinggi.'),
+    ('Gaji & Perbandingan', 'Perbandingan gaji horizontal memudahkan identifikasi industri dengan kompensasi lebih tinggi.'),
+]
+
+cards_html = '<div class="conclusion-grid>'
+cards_html = '<div class="conclusion-grid">'
+for title, text in insights:
+    cards_html += f'<div class="conclusion-card"><h4>{title}</h4><p>{text}</p></div>'
+cards_html += '</div>'
+
+st.markdown(cards_html, unsafe_allow_html=True)
 
