@@ -523,7 +523,7 @@ st.subheader('Insight & Kesimpulan')
 insights = [
     ('Skill Teknis Mendominasi', 'Python, SQL, dan tool cloud muncul paling sering dan menjadi prioritas rekrutmen di banyak kategori.'),
     ('Industri dengan Variasi Skill', 'Industri besar (Retail, Finance, Healthcare) menunjukkan variasi skill yang tinggi.'),
-    ('Gaji & Perbandingan', 'Rata-rata gaji relatif stabil di $94-96K lintas industri, namun skill dengan gaji tertinggi (C++, Market Research, Nursing) bukan yang paling populer.),
+    ('Gaji & Perbandingan', 'Rata-rata gaji relatif stabil di $94-96K lintas industri, namun skill dengan gaji tertinggi (C++, Market Research, Nursing) bukan yang paling populer.'),
 ]
 
 cards_html = '<div class="conclusion-grid>'
