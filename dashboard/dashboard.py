@@ -449,9 +449,16 @@ with tab_salary:
             fig, ax = plt.subplots(figsize=(11.5, 7.5), facecolor='white')
             industries = list(avg_salary.index)
             salaries = list(avg_salary.values)
-            bars = ax.barh(industries, salaries, color=sns.color_palette('crest', n_colors=len(industries)), edgecolor='white', linewidth=0.8)
+            bars = ax.barh(range(len(industries)), salaries, color=sns.color_palette('crest', n_colors=len(industries)), edgecolor='white', linewidth=0.8, height=0.7)
+            
+            ax.set_yticks(range(len(industries)))
+            ax.set_yticklabels(industries, fontsize=10)
             chart_frame(ax, 'Rata-rata Gaji per Kategori Industri', 'Rata-rata Gaji (USD)', 'Industri')
-            annotate_bars(ax, bars, salaries, fmt='${:,.0f}', offset_ratio=0.02)
+            
+            # Annotate with salary values
+            for i, sal in enumerate(salaries):
+                ax.text(sal + 500, i, f'${sal:,.0f}', va='center', fontsize=10, fontweight='bold', color='#1f2937')
+            
             ax.set_xlim(0, 120000)
             plt.tight_layout()
             st.pyplot(fig, clear_figure=True)
@@ -472,7 +479,7 @@ with tab_salary:
     # Top 10 Skills by Salary
     st.markdown('### Top 10 Skill dengan Gaji Tertinggi')
     st.markdown(
-        '<div class="section-caption">Skill yang ditampilkan adalah yang memiliki rata-rata gaji tertinggi dengan minimum 50 kemunculan untuk akurasi.</div>',
+        '<div class="section-caption">"Bagian ini menunjukkan 10 Skill yang memiliki rata-rata gaji tertinggi</div>',
         unsafe_allow_html=True,
     )
 
