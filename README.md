@@ -8,6 +8,14 @@ Dashboard ini menampilkan analisis pasar kerja berbasis data lowongan, dengan fo
 
 Aplikasi dibangun dengan **Streamlit** dan visualisasi menggunakan **Matplotlib** serta **Seaborn**.
 
+## Akses Dashboard
+
+Dashboard dapat dibuka melalui link berikut:
+
+[https://karirku.streamlit.app/](https://karirku.streamlit.app/)
+
+Link yang sama juga disimpan di file [url.txt](url.txt) untuk akses cepat.
+
 ## Cara Menjalankan
 
 1. Pastikan Python sudah terpasang.
