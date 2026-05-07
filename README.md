@@ -38,6 +38,8 @@ Capstone Project/
 └── url.txt
 ```
 
+Folder `data/` berisi dataset awal yang menjadi bahan dasar sebelum data utama di dashboard dirapikan menjadi `dashboard/all_jobs_data.csv`.
+
 ## Dataset Utama: `all_jobs_data.csv`
 
 Dataset utama yang dipakai dashboard berada di folder `dashboard/` dengan nama `all_jobs_data.csv`. Dataset ini berisi **50.200 baris** data lowongan kerja yang sudah dirapikan untuk analisis dashboard.
@@ -67,16 +69,15 @@ Dataset ini digunakan untuk menghitung:
 
 - Kolom `skills_list` dipakai agar skill bisa dihitung per item, bukan hanya sebagai teks mentah.
 - Kolom `salary` sudah dikonversi menjadi numerik supaya bisa dihitung rata-ratanya.
-- Beberapa nilai bisa berisi informasi seperti `Not Specified` pada level pengalaman jika data asli tidak menyediakan detail lengkap.
 
-## Dataset Pendukung
+## Dataset Awal
 
-Folder `data/` berisi dataset tambahan yang bisa dipakai untuk eksplorasi atau pengembangan lanjutan:
+Folder `data/` berisi dataset awal yang dipakai sebagai sumber utama sebelum proses pembersihan dan penggabungan data untuk dashboard:
 
 - `job_market.csv`
 - `job_recommendation_dataset.csv`
 
-Keduanya tidak digunakan langsung oleh dashboard utama saat ini, tetapi berguna untuk analisis tambahan atau pengembangan fitur berikutnya.
+Kedua file ini menjadi dasar untuk eksplorasi awal, pembersihan data, dan pembentukan dataset utama yang digunakan oleh dashboard.
 
 ## Teknologi yang Dipakai
 
