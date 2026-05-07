@@ -479,7 +479,7 @@ with tab_salary:
     # Top 10 Skills by Salary
     st.markdown('### Top 10 Skill dengan Gaji Tertinggi')
     st.markdown(
-        '<div class="section-caption">"Bagian ini menunjukkan 10 Skill yang memiliki rata-rata gaji tertinggi</div>',
+        '<div class="section-caption">Bagian ini menunjukkan 10 skill dengan rata-rata gaji tertinggi.</div>',
         unsafe_allow_html=True,
     )
 
@@ -520,10 +520,31 @@ with tab_salary:
         st.info('Data skill dengan gaji tidak tersedia')
 
 st.subheader('Insight & Kesimpulan')
+avg_salary_by_industry = get_avg_salary_by_industry(main_data)
+top_skills_salary = get_top_skills_by_salary(main_data, n=10, min_occurrences=50)
+
+salary_insight_text = 'Data gaji tidak tersedia.'
+if not avg_salary_by_industry.empty:
+    top_industry_name = avg_salary_by_industry.idxmax()
+    bottom_industry_name = avg_salary_by_industry.idxmin()
+    salary_insight_text = (
+        f'Rata-rata gaji keseluruhan berada di {format_usd(avg_salary_by_industry.mean())}. '
+        f'Industri tertinggi adalah {top_industry_name} ({format_usd(avg_salary_by_industry.max())}), '
+        f'sedangkan yang terendah adalah {bottom_industry_name} ({format_usd(avg_salary_by_industry.min())}).'
+    )
+
+skill_insight_text = 'Skill bergaji tertinggi belum tersedia.'
+if not top_skills_salary.empty:
+    top_skill_name = top_skills_salary['mean'].idxmax()
+    skill_insight_text = (
+        f'Skill dengan rata-rata gaji tertinggi adalah {top_skill_name} '
+        f'({format_usd(top_skills_salary.loc[top_skill_name, "mean"])}).'
+    )
+
 insights = [
     ('Skill Teknis Mendominasi', 'Python, SQL, dan tool cloud muncul paling sering dan menjadi prioritas rekrutmen di banyak kategori.'),
     ('Industri dengan Variasi Skill', 'Industri besar (Retail, Finance, Healthcare) menunjukkan variasi skill yang tinggi.'),
-    ('Gaji & Perbandingan', 'Rata-rata gaji relatif stabil di $94-96K lintas industri, namun skill dengan gaji tertinggi (C++, Market Research, Nursing) bukan yang paling populer.'),
+    ('Gaji & Perbandingan', f'{salary_insight_text} {skill_insight_text}'),
 ]
 
 cards_html = '<div class="conclusion-grid>'
